@@ -96,5 +96,21 @@ jobs:
           DATABASE_URL: postgres://agri:agri@localhost:5432/agri_test
 
       - name: Test
-        run: npm test -- --forceExit --passWithNoTests
+        run: npm test -- --forceExit --passWithNoTests --coverage
         working-directory: backend
+
+      - name: SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        if: ${{ always() }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=agri-fi-backend
+            -Dsonar.projectName="Agri-Fi Backend"
+            -Dsonar.sources=backend/src
+            -Dsonar.tests=backend/src
+            -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.ts
+            -Dsonar.typescript.lcov.reportPaths=backend/coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
