@@ -11,6 +11,7 @@ import {
   TradeDeal,
   TradeDealStatus,
 } from '../trade-deals/entities/trade-deal.entity';
+import { User } from '../auth/entities/user.entity';
 import { StellarService } from '../stellar/stellar.service';
 import { QueueService } from '../queue/queue.service';
 import {
@@ -20,6 +21,11 @@ import {
   toPaginatedResult,
 } from '../common/pagination';
 
+export interface CreateInvestmentResult {
+  investment: Investment;
+  unsignedXdr: string;
+}
+
 @Injectable()
 export class InvestmentsService {
   constructor(
@@ -27,6 +33,8 @@ export class InvestmentsService {
     private readonly investmentRepo: Repository<Investment>,
     @InjectRepository(TradeDeal)
     private readonly tradeDealRepo: Repository<TradeDeal>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly stellarService: StellarService,
     private readonly dataSource: DataSource,
     private readonly queueService: QueueService,
@@ -35,8 +43,20 @@ export class InvestmentsService {
   async createInvestment(
     investorId: string,
     dto: CreateInvestmentDto,
-  ): Promise<Investment> {
-    return this.dataSource.transaction(async (manager) => {
+  ): Promise<CreateInvestmentResult> {
+    // Load investor to get their wallet address for the XDR
+    const investor = await this.userRepo.findOne({ where: { id: investorId } });
+    if (!investor) {
+      throw new NotFoundException('Investor not found.');
+    }
+    if (!investor.walletAddress) {
+      throw new UnprocessableEntityException({
+        code: 'NO_WALLET_ADDRESS',
+        message: 'Investor must link a Stellar wallet address before investing.',
+      });
+    }
+
+    const investment = await this.dataSource.transaction(async (manager) => {
       // Load and lock the trade deal
       const tradeDeal = await manager.findOne(TradeDeal, {
         where: { id: dto.tradeDealId },
@@ -52,6 +72,20 @@ export class InvestmentsService {
         throw new UnprocessableEntityException({
           code: 'DEAL_NOT_OPEN',
           message: 'Only open deals can be invested in.',
+        });
+      }
+
+      if (!tradeDeal.escrowPublicKey) {
+        throw new UnprocessableEntityException({
+          code: 'NO_ESCROW_ACCOUNT',
+          message: 'Trade deal does not have an escrow account yet.',
+        });
+      }
+
+      if (!tradeDeal.issuerPublicKey) {
+        throw new UnprocessableEntityException({
+          code: 'NO_ISSUER_KEY',
+          message: 'Trade deal does not have a token issuer configured.',
         });
       }
 
@@ -91,7 +125,7 @@ export class InvestmentsService {
       }
 
       // Create pending investment within the locked transaction
-      const investment = manager.create(Investment, {
+      const newInvestment = manager.create(Investment, {
         tradeDealId: dto.tradeDealId,
         investorId,
         tokenAmount: dto.tokenAmount,
@@ -100,8 +134,26 @@ export class InvestmentsService {
         complianceData: dto.complianceData ?? null,
       });
 
-      return manager.save(investment);
+      return manager.save(newInvestment);
     });
+
+    // Build the unsigned Stellar XDR outside the DB transaction
+    // (network I/O should not hold a DB lock)
+    const tradeDeal = await this.tradeDealRepo.findOne({
+      where: { id: dto.tradeDealId },
+    });
+
+    const unsignedXdr = await this.stellarService.createInvestmentTransaction(
+      investor.walletAddress,
+      tradeDeal!.escrowPublicKey!,
+      dto.amountUsd,
+      tradeDeal!.tokenSymbol,
+      dto.tokenAmount,
+      tradeDeal!.issuerPublicKey!,
+      dto.complianceData,
+    );
+
+    return { investment, unsignedXdr };
   }
 
   async confirmInvestment(
