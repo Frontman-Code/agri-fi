@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ReactNode, useState } from 'react';
 import { apiClient, User } from '@/lib/api';
+import { Header } from './navigation/Header';
 
 /* ── Nav config ───────────────────────────────────────────────────────────── */
 interface NavItem { label: string; href: string; icon: ReactNode; exact?: boolean; }
@@ -48,7 +49,6 @@ interface Props { user: User; children: ReactNode; }
 export default function DashboardLayout({ user, children }: Props) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const nav   = navForRole(user.role);
   const theme = ROLE_THEME[user.role] ?? ROLE_THEME.farmer;
@@ -135,33 +135,12 @@ export default function DashboardLayout({ user, children }: Props) {
         <Sidebar />
       </div>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex md:hidden">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)} />
-          <div className="relative z-50 flex flex-col h-full animate-slide-up">
-            <Sidebar onClose={() => setMobileOpen(false)} />
-          </div>
-        </div>
-      )}
-
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile topbar */}
-        <header className="md:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-slate-100 flex-shrink-0">
-          <button onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-            <MenuIcon />
-          </button>
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl">🌾</span>
-            <span className="font-black text-slate-900 text-base">AgriFi</span>
-          </Link>
-          <div className={`w-8 h-8 rounded-xl ${theme.accent} flex items-center justify-center text-white text-sm`}>
-            {theme.emoji}
-          </div>
-        </header>
+        {/* Mobile responsive header */}
+        <div className="md:hidden">
+          <Header user={user} onLogout={handleLogout} />
+        </div>
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
@@ -177,6 +156,5 @@ function HomeIcon()   { return <svg viewBox="0 0 24 24" fill="none" stroke="curr
 function ShopIcon()   { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>; }
 function ShieldIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>; }
 function LogoutIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>; }
-function MenuIcon()     { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>; }
 function DocsIcon()     { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>; }
 function SettingsIcon() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>; }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient, User, getStoredToken } from '@/lib/api';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatCard from '@/components/StatCard';
-import { useToast } from '@/components/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface AdminUser {
   id: string; email: string; role: string; kycStatus: string;

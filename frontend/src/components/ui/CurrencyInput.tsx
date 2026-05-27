@@ -38,13 +38,13 @@ function sanitizeValue(value: string, decimalPlaces: number): string {
     : integerPart;
 }
 
-function formatForDisplay(value: string): string {
+function formatForDisplay(value: string, locale: string): string {
   if (!value) {
     return '';
   }
 
   const [integerPart, decimalPart] = value.split('.');
-  const formattedInteger = Number(integerPart || '0').toLocaleString('en-US');
+  const formattedInteger = Number(integerPart || '0').toLocaleString(locale);
 
   if (value.endsWith('.') && decimalPart === undefined) {
     return `${formattedInteger}.`;
@@ -78,6 +78,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
   onBlur,
   ...props
 }) => {
+  const locale = useLocale();
   const decimalPlaces = getDecimalPlaces(currency);
 
   return (
@@ -91,7 +92,7 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
         {...props}
         type="text"
         inputMode="decimal"
-        value={formatForDisplay(value)}
+        value={formatForDisplay(value, locale)}
         onChange={(event) => {
           const nextValue = sanitizeValue(event.target.value, decimalPlaces);
           onChange(nextValue);

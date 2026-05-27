@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { apiClient, Investment, User } from '@/lib/api';
-import DashboardLayout from '@/components/DashboardLayout';
-import StatCard from '@/components/StatCard';
-import { InvestmentCertificate } from '@/components/InvestmentCertificate';
-import { AnchorWidget } from '@/components/AnchorWidget';
+import { apiClient, Investment, User } from '../../../../lib/api';
+import DashboardLayout from '../../../../components/DashboardLayout';
+import StatCard from '../../../../components/StatCard';
+import { InvestmentCertificate } from '../../../../components/InvestmentCertificate';
+import { AnchorWidget } from '../../../../components/AnchorWidget';
 
 const INV_STATUS: Record<string, string> = {
   confirmed: 'badge-green', pending: 'badge-yellow', failed: 'badge-red', refunded: 'badge-gray',

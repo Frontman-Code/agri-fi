@@ -2,53 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
-/* ── Data ─────────────────────────────────────────────────────────────────── */
-const stats = [
-  { value: "$2.4M+", label: "Total Funded",    icon: "💰" },
-  { value: "340+",   label: "Active Projects", icon: "🌱" },
-  { value: "1,200+", label: "Investors",        icon: "👥" },
-  { value: "98%",    label: "Harvest Success",  icon: "✅" },
-];
-
-const features = [
-  { icon: "🌱", title: "Fund Farming Projects",
-    desc: "Farmers tokenize crops and raise capital. Investors get fractional ownership with transparent on-chain returns." },
-  { icon: "📊", title: "Real-Time Tracking",
-    desc: "Live harvest updates, GPS shipment milestones, and immutable proof of every transaction on Stellar." },
-  { icon: "🛒", title: "Direct Marketplace",
-    desc: "Companies buy verified agricultural products straight from farmers — zero middlemen, full traceability." },
-  { icon: "🔐", title: "Stellar Escrow",
-    desc: "Smart escrow accounts, tokenized assets, and cryptographic proof secure every deal end-to-end." },
-];
-
-const roles = [
-  {
-    emoji: "👨‍🌾", title: "Farmers", accent: "#16a34a",
-    bg: "from-emerald-500 to-green-600",
-    points: ["Launch funding campaigns", "Upload farm & harvest data", "Sell directly to buyers", "Withdraw earnings instantly"],
-    cta: "Start as Farmer",
-  },
-  {
-    emoji: "💼", title: "Investors", accent: "#2563eb",
-    bg: "from-blue-500 to-indigo-600",
-    points: ["Browse vetted projects", "Invest fractionally from $100", "Earn transparent ROI", "Track portfolio in real-time"],
-    cta: "Start Investing",
-  },
-  {
-    emoji: "🏢", title: "Companies", accent: "#7c3aed",
-    bg: "from-violet-500 to-purple-600",
-    points: ["Buy bulk produce direct", "Verified farmer network", "Track deliveries live", "Secure escrow payments"],
-    cta: "Register as Buyer",
-  },
-];
-
-const steps = [
-  { n: "01", title: "Create Account", desc: "Sign up as a farmer, investor, or company in under 2 minutes." },
-  { n: "02", title: "Complete KYC",   desc: "Verify your identity to unlock full platform access." },
-  { n: "03", title: "Fund or List",   desc: "Farmers list crops; investors browse and fund projects." },
-  { n: "04", title: "Earn Returns",   desc: "Track harvest, receive payouts, and reinvest profits." },
-];
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 /* ── Animated counter ─────────────────────────────────────────────────────── */
 function useCounter(target: string, duration = 1800) {
@@ -81,7 +36,7 @@ function StatItem({ value, label, icon }: { value: string; label: string; icon: 
 }
 
 /* ── Nav ──────────────────────────────────────────────────────────────────── */
-function Navbar() {
+function Navbar({ tn }: { tn: any }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -100,14 +55,16 @@ function Navbar() {
         </Link>
 
         <div className="hidden sm:flex items-center gap-1">
-          <Link href="/marketplace" className="btn-ghost text-sm px-4 py-2">Marketplace</Link>
-          <Link href="/transparency" className="btn-ghost text-sm px-4 py-2">Transparency</Link>
-          <Link href="/login"       className="btn-ghost text-sm px-4 py-2">Sign in</Link>
-          <Link href="/register"    className="btn-primary ml-2 text-sm px-5 py-2">Get Started →</Link>
+          <Link href="/marketplace" className="btn-ghost text-sm px-4 py-2">{tn('marketplace')}</Link>
+          <Link href="/transparency" className="btn-ghost text-sm px-4 py-2">{tn('transparency.title') || 'Transparency'}</Link>
+          <Link href="/login"       className="btn-ghost text-sm px-4 py-2">{tn('signIn') || 'Sign in'}</Link>
+          <LanguageSwitcher />
+          <Link href="/register"    className="btn-primary ml-2 text-sm px-5 py-2">{tn('getStarted') || 'Get Started'} →</Link>
         </div>
 
-        <div className="flex sm:hidden gap-2">
-          <Link href="/login"    className="btn-secondary text-xs px-3 py-2">Sign in</Link>
+        <div className="flex sm:hidden gap-2 items-center">
+          <LanguageSwitcher />
+          <Link href="/login"    className="btn-secondary text-xs px-3 py-2">{tn('signIn') || 'Sign in'}</Link>
           <Link href="/register" className="btn-primary  text-xs px-3 py-2">Join</Link>
         </div>
       </div>
@@ -117,9 +74,78 @@ function Navbar() {
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 export default function Home() {
+  const t = useTranslations("home");
+  const tn = useTranslations("nav");
+
+  const stats = [
+    { value: "$2.4M+", label: t("stats.totalFunded"),    icon: "💰" },
+    { value: "340+",   label: t("stats.activeProjects"), icon: "🌱" },
+    { value: "1,200+", label: t("stats.investors"),        icon: "👥" },
+    { value: "98%",    label: t("stats.harvestSuccess"),  icon: "✅" },
+  ];
+
+  const features = [
+    { icon: "🌱", title: t("features.fundFarming.title"), desc: t("features.fundFarming.desc") },
+    { icon: "📊", title: t("features.realTime.title"),    desc: t("features.realTime.desc") },
+    { icon: "🛒", title: t("features.marketplace.title"), desc: t("features.marketplace.desc") },
+    { icon: "🔐", title: t("features.escrow.title"),      desc: t("features.escrow.desc") },
+  ];
+
+  const steps = [
+    { n: "01", title: t("steps.step1.title"), desc: t("steps.step1.desc") },
+    { n: "02", title: t("steps.step2.title"), desc: t("steps.step2.desc") },
+    { n: "03", title: t("steps.step3.title"), desc: t("steps.step3.desc") },
+    { n: "04", title: t("steps.step4.title"), desc: t("steps.step4.desc") },
+  ];
+
+  const roles = [
+    {
+      emoji: "👨‍🌾", title: t("roles.farmer.title"), accent: "#16a34a",
+      bg: "from-emerald-500 to-green-600",
+      points: [
+        t("roles.farmer.points.0"),
+        t("roles.farmer.points.1"),
+        t("roles.farmer.points.2"),
+        t("roles.farmer.points.3")
+      ],
+      cta: t("roles.farmer.cta"),
+    },
+    {
+      emoji: "💼", title: t("roles.investor.title"), accent: "#2563eb",
+      bg: "from-blue-500 to-indigo-600",
+      points: [
+        t("roles.investor.points.0"),
+        t("roles.investor.points.1"),
+        t("roles.investor.points.2"),
+        t("roles.investor.points.3")
+      ],
+      cta: t("roles.investor.cta"),
+    },
+    {
+      emoji: "🏢", title: t("roles.company.title"), accent: "#7c3aed",
+      bg: "from-violet-500 to-purple-600",
+      points: [
+        t("roles.company.points.0"),
+        t("roles.company.points.1"),
+        t("roles.company.points.2"),
+        t("roles.company.points.3")
+      ],
+      cta: t("roles.company.cta"),
+    },
+  ];
+
+  const transparencyItems = [
+    { icon: "🔗", title: t("transparency.smartContracts.title"), desc: t("transparency.smartContracts.desc") },
+    { icon: "🪙", title: t("transparency.tokenized.title"),      desc: t("transparency.tokenized.desc") },
+    { icon: "💵", title: t("transparency.usdc.title"),           desc: t("transparency.usdc.desc") },
+    { icon: "📋", title: t("transparency.certificates.title"),   desc: t("transparency.certificates.desc") },
+    { icon: "🌍", title: t("transparency.anchors.title"),        desc: t("transparency.anchors.desc") },
+    { icon: "🔍", title: t("transparency.audit.title"),          desc: t("transparency.audit.desc") },
+  ];
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      <Navbar />
+      <Navbar tn={tn} />
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
@@ -136,28 +162,27 @@ export default function Home() {
           {/* Pill badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-semibold mb-8 animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-            Live on Stellar Testnet · Zero fees during beta
+            {t("liveOnStellar")}
           </div>
 
           {/* Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 leading-[1.05] tracking-tight mb-6 animate-slide-up">
-            Agriculture meets{" "}
-            <span className="gradient-text">DeFi</span>
+            {t("hero.titlePart1")}{" "}
+            <span className="gradient-text">{t("hero.titlePart2")}</span>
             <br className="hidden sm:block" />
-            <span className="text-slate-400 font-light"> — transparently.</span>
+            <span className="text-slate-400 font-light"> {t("hero.titlePart3")}</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            Fund farming projects, earn real returns, and buy produce directly from verified farmers.
-            Every transaction secured on the Stellar blockchain.
+            {t("description")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <Link href="/register" className="btn-lg bg-brand-600 text-white hover:bg-brand-700 shadow-lg hover:shadow-glow-lg transition-all">
-              Start for free →
+              {t("startFree")} →
             </Link>
             <Link href="/marketplace" className="btn-lg btn-secondary">
-              Browse projects
+              {t("browseProjects")}
             </Link>
           </div>
 
@@ -168,7 +193,7 @@ export default function Home() {
                 <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-emerald-500 border-2 border-white flex items-center justify-center text-sm">{e}</div>
               ))}
             </div>
-            <span>Trusted by <strong className="text-slate-600">1,200+ investors</strong> across Africa</span>
+            <span>{t("trustedBy", { count: "1,200+" })}</span>
           </div>
         </div>
 
@@ -192,12 +217,12 @@ export default function Home() {
       <section className="py-24 px-4 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="badge-green mb-4">Platform Features</span>
+            <span className="badge-green mb-4">{t("features.badge")}</span>
             <h2 className="text-4xl font-black text-slate-900 mt-3 mb-4 tracking-tight">
-              Everything in one ecosystem
+              {t("features.title")}
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-lg">
-              From seed funding to harvest sales — AgriFi handles the full agricultural value chain.
+              {t("features.description")}
             </p>
           </div>
 
@@ -221,9 +246,9 @@ export default function Home() {
       <section className="py-24 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <span className="badge-blue mb-4">How It Works</span>
+            <span className="badge-blue mb-4">{t("steps.title")}</span>
             <h2 className="text-4xl font-black text-slate-900 mt-3 mb-4 tracking-tight">
-              Up and running in minutes
+              {t("steps.title")}
             </h2>
           </div>
 
@@ -250,11 +275,10 @@ export default function Home() {
       <section className="py-24 px-4 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="badge-purple mb-4">Who It&apos;s For</span>
+            <span className="badge-purple mb-4">{t("roles.farmer.title")}</span>
             <h2 className="text-4xl font-black text-slate-900 mt-3 mb-4 tracking-tight">
-              Built for everyone in the chain
+              {t("features.title")}
             </h2>
-            <p className="text-slate-500 text-lg">Whether you grow it, fund it, or buy it — there&apos;s a place for you.</p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6">
@@ -294,24 +318,17 @@ export default function Home() {
       <section className="py-24 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="badge-green mb-4">Stellar Blockchain</span>
+            <span className="badge-green mb-4">{t("transparency.badge")}</span>
             <h2 className="text-4xl font-black text-slate-900 mt-3 mb-4 tracking-tight">
-              Transparent by design
+              {t("transparency.title")}
             </h2>
             <p className="text-slate-500 text-lg max-w-xl mx-auto">
-              Every investment, payout, and milestone is recorded on Stellar. Verify anything, anytime.
+              {t("transparency.description")}
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-            {[
-              { icon: "🔗", title: "Soroban Smart Contracts", desc: "FarmCampaign contracts automate escrow, milestone releases, and revenue distribution — no manual intervention." },
-              { icon: "🪙", title: "Tokenized Investments", desc: "Each project issues Stellar assets. Investors hold tokens representing fractional ownership, tradeable on the DEX." },
-              { icon: "💵", title: "USDC Settlements", desc: "All payments use USDC on Stellar — stable, fast, and cross-border. Withdraw to local currency via Stellar Anchors." },
-              { icon: "📋", title: "On-Chain Certificates", desc: "Investment certificates are backed by immutable Stellar transactions. Proof of ownership, forever." },
-              { icon: "🌍", title: "Stellar Anchors", desc: "Deposit NGN, KES, GHS, ZAR or USD and receive USDC instantly. Withdraw earnings to your local bank." },
-              { icon: "🔍", title: "Public Audit Trail", desc: "Every contract address, transaction hash, and payout is publicly verifiable on Stellar Expert." },
-            ].map(item => (
+            {transparencyItems.map(item => (
               <div key={item.title} className="card-hover p-6 group">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
                   {item.icon}
@@ -325,7 +342,7 @@ export default function Home() {
           <div className="text-center">
             <Link href="/transparency"
               className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-semibold rounded-2xl hover:bg-slate-800 transition-all text-sm">
-              🔍 View Live Blockchain Data →
+              🔍 {t("transparency.viewData")} →
             </Link>
           </div>
         </div>
@@ -341,18 +358,18 @@ export default function Home() {
 
         <div className="relative max-w-2xl mx-auto text-center text-white">
           <div className="text-5xl mb-6 animate-bounce-sm">🚀</div>
-          <h2 className="text-4xl font-black mb-4 tracking-tight">Ready to grow your wealth?</h2>
+          <h2 className="text-4xl font-black mb-4 tracking-tight">{t("cta.title")}</h2>
           <p className="text-brand-100 mb-10 text-lg">
-            Join thousands of farmers, investors, and buyers already building the future of agriculture.
+            {t("cta.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/register"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-brand-700 font-bold rounded-2xl hover:bg-brand-50 transition-all shadow-lg hover:shadow-xl text-base active:scale-95">
-              Create Free Account →
+              {t("cta.createAccount")} →
             </Link>
             <Link href="/marketplace"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all border border-white/20 text-base active:scale-95">
-              Browse Marketplace
+              {t("cta.browseMarketplace")}
             </Link>
           </div>
         </div>
@@ -367,16 +384,16 @@ export default function Home() {
               <span className="font-black text-white text-lg">AgriFi</span>
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <Link href="/marketplace"  className="hover:text-white transition-colors">Marketplace</Link>
-              <Link href="/transparency" className="hover:text-white transition-colors">Transparency</Link>
-              <Link href="/login"        className="hover:text-white transition-colors">Sign in</Link>
+              <Link href="/marketplace"  className="hover:text-white transition-colors">{tn('marketplace')}</Link>
+              <Link href="/transparency" className="hover:text-white transition-colors">{t('transparency.viewData')}</Link>
+              <Link href="/login"        className="hover:text-white transition-colors">{tn('signIn') || 'Sign in'}</Link>
               <Link href="/register"     className="hover:text-white transition-colors">Register</Link>
             </div>
           </div>
           <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <p>© {new Date().getFullYear()} AgriFi. All rights reserved.</p>
+            <p>{t("footer.rights", { year: new Date().getFullYear() })}</p>
             <p className="flex items-center gap-1.5">
-              Powered by <span className="text-brand-400 font-semibold">Stellar</span> blockchain
+              {t("footer.poweredBy", { brand: "Stellar" })}
               <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
             </p>
           </div>

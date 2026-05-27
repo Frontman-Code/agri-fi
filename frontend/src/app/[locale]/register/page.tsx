@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
-import { useToast } from '@/components/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 const ROLES = [
   { value: 'farmer',        emoji: '👨‍🌾', label: 'Farmer',   desc: 'List crops & raise funding',   color: 'border-emerald-400 bg-emerald-50 ring-emerald-400' },

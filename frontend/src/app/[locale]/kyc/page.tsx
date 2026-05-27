@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
-import { useToast } from '@/components/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 type Mode = 'individual' | 'business';
 

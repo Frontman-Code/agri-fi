@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
-import { useToast } from '@/components/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 const DEMOS = [
   { label: '👨‍🌾 Farmer',   email: 'farmer@agri-fi.demo',   color: 'hover:border-emerald-400 hover:bg-emerald-50' },

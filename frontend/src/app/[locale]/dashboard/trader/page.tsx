@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { apiClient, Deal, User, MILESTONE_LABELS } from '@/lib/api';
-import DashboardLayout from '@/components/DashboardLayout';
-import StatCard from '@/components/StatCard';
-import { useToast } from '@/components/Toast';
+import { apiClient, Deal, User, MILESTONE_LABELS } from '../../../../lib/api';
+import DashboardLayout from '../../../../components/DashboardLayout';
+import StatCard from '../../../../components/StatCard';
+import { useToast } from '../../../../components/ui/ToastProvider';
 
 const STATUS_CFG: Record<string, string> = {
   open: 'badge-green', funded: 'badge-blue', draft: 'badge-yellow',

@@ -1,10 +1,6 @@
-// Validate BACKEND_URL in production
-if (!process.env.BACKEND_URL && process.env.NODE_ENV === 'production') {
-  throw new Error(
-    'BACKEND_URL environment variable is required in production. ' +
-    'Please set BACKEND_URL to your backend API endpoint.'
-  );
-}
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -15,4 +11,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);
