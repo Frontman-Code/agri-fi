@@ -5,6 +5,7 @@ import { getDealById, Milestone } from '@/lib/api';
 import FundingProgressBar from '@/components/FundingProgressBar';
 import StatusBadge from '@/components/StatusBadge';
 import { ShipmentTimeline } from '@/components/ShipmentTimeline';
+import { ShipmentMap } from '@/components/dashboard/ShipmentMap';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import InvestmentSection from '@/components/InvestmentSection';
 
@@ -217,6 +218,9 @@ export default async function DealDetailPage({ params }: { params: { id: string 
               <ShipmentTimeline tradeDealId={deal.id} initialMilestones={milestones} />
             </div>
           </div>
+
+          {/* Shipment Map — Issue #247 */}
+          <ShipmentMap tradeDealId={deal.id} className="w-full" />
 
         </div>
       </main>

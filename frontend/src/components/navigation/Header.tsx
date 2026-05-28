@@ -6,6 +6,9 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '@/lib/api';
 import { WalletButton } from '../WalletButton';
+import { WalletModal } from '../wallet/WalletModal';
+import { useStellarWallet } from '@/hooks/useStellarWallet';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 interface HeaderProps {
   user: User;
@@ -22,7 +25,9 @@ const ROLE_THEME: Record<string, { accent: string; label: string; emoji: string 
 
 export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const pathname = usePathname();
+  const { status, displayKey, network } = useStellarWallet();
   const theme = ROLE_THEME[user.role] ?? ROLE_THEME.farmer;
 
   // Close drawer on route change
@@ -74,7 +79,35 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           <div className="h-6 w-px bg-slate-200 mx-2" />
           <LanguageSwitcher />
           <div className="h-6 w-px bg-slate-200 mx-2" />
-          <WalletButton />
+          {/* Wallet status indicator — Issue #243 */}
+          <button
+            onClick={() => setShowWalletModal(true)}
+            className={`flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-xl transition-colors ${
+              status === 'connected'
+                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+              status === 'connected' ? 'bg-emerald-500' :
+              status === 'connecting' ? 'bg-amber-400 animate-pulse' :
+              'bg-slate-400'
+            }`} />
+            {status === 'connected' && displayKey ? (
+              <span className="font-mono">{displayKey}</span>
+            ) : status === 'connecting' ? (
+              'Connecting…'
+            ) : (
+              'Connect Wallet'
+            )}
+            {status === 'connected' && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                network === 'Public' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+              }`}>
+                {network}
+              </span>
+            )}
+          </button>
         </nav>
 
         {/* Hamburger Menu Button */}
@@ -149,7 +182,27 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
                   </div>
                 </div>
                 <div className="mt-6">
-                  <WalletButton />
+                  {/* Wallet status in mobile drawer */}
+                  <button
+                    onClick={() => { setIsOpen(false); setShowWalletModal(true); }}
+                    className={`w-full flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors ${
+                      status === 'connected'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      status === 'connected' ? 'bg-emerald-500' : 'bg-slate-400'
+                    }`} />
+                    {status === 'connected' && displayKey ? (
+                      <span className="font-mono">{displayKey}</span>
+                    ) : 'Connect Wallet'}
+                    {status === 'connected' && (
+                      <span className="ml-auto text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
+                        {network}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -202,6 +255,9 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           </>
         )}
       </AnimatePresence>
+
+      {/* Wallet Modal — Issue #243 */}
+      {showWalletModal && <WalletModal onClose={() => setShowWalletModal(false)} />}
     </>
   );
 };
