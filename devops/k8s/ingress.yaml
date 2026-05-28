@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/enable-gzip: "true"
+    nginx.ingress.kubernetes.io/gzip-types: "text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml"
+    nginx.ingress.kubernetes.io/gzip-min-length: "1024"
+    nginx.ingress.kubernetes.io/brotli-level: "4"
+    nginx.ingress.kubernetes.io/brotli-types: "text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml"
+spec:
+  rules:
+    - host: example.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-service
+                port:
+                  number: 80
