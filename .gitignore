@@ -6,3 +6,5 @@ build
 .next
 .eslintcache
 *.log
+
+fix.md
