@@ -68,3 +68,26 @@ variable "backend_subnet_cidrs" {
   description = "CIDR blocks of the backend application subnet(s) allowed to reach PostgreSQL on 5432."
   type        = list(string)
 }
+
+
+variable "ecs_subnet_ids" {
+  description = "Subnet IDs for ECS tasks"
+  type        = list(string)
+}
+
+variable "alb_subnet_ids" {
+  description = "Subnet IDs for the Application Load Balancer"
+  type        = list(string)
+}
+
+variable "jwt_secret" {
+  description = "JWT secret for authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "stellar_platform_secret" {
+  description = "Stellar platform secret key"
+  type        = string
+  sensitive   = true
+}
