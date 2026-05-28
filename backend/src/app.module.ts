@@ -21,6 +21,7 @@ import { HealthModule } from './health/health.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SorobanModule } from './soroban/soroban.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { SorobanModule } from './soroban/soroban.module';
     HealthModule,
     TerminusModule,
     SorobanModule,
+    MetricsModule,
   ],
 })
 export class AppModule implements NestModule {
