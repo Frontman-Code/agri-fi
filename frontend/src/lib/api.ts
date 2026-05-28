@@ -57,6 +57,8 @@ export interface Deal {
   issuer_public_key?: string | null;
   status: "draft" | "open" | "funded" | "delivered" | "completed" | "failed";
   delivery_date: string;
+  annual_roi?: number;
+  term_days?: number;
   created_at: string;
   documents?: Document[];
   milestones?: Milestone[];
@@ -172,6 +174,8 @@ function normalizeDeal(raw: any): Deal {
     issuer_public_key: raw.issuer_public_key ?? raw.issuerPublicKey ?? null,
     status: raw.status ?? "draft",
     delivery_date: raw.delivery_date ?? raw.deliveryDate ?? "",
+    annual_roi: raw.annual_roi ?? raw.annualRoi ?? 0.15, // Default 15%
+    term_days: raw.term_days ?? raw.termDays ?? 90,     // Default 90 days
     created_at: raw.created_at ?? raw.createdAt ?? "",
     documents: raw.documents,
     milestones: raw.milestones,

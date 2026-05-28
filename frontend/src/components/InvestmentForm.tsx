@@ -11,6 +11,7 @@ interface InvestmentFormProps {
   tokenPrice: number;
   onSuccess?: (investment: any) => void;
   onError?: (error: string) => void;
+  onQuantityChange?: (quantity: number) => void;
 }
 
 interface InvestmentResponse {
@@ -36,6 +37,7 @@ export const InvestmentForm: React.FC<InvestmentFormProps> = ({
   tokenPrice = 100,
   onSuccess,
   onError,
+  onQuantityChange,
 }) => {
   const { toast, promise } = useToast();
   const { isConnected, publicKey, signTransaction } = useWallet();
@@ -278,7 +280,9 @@ export const InvestmentForm: React.FC<InvestmentFormProps> = ({
           value={tokenQuantity === '' ? '' : tokenQuantity}
           onChange={(e) => {
             const val = parseInt(e.target.value, 10);
+            const qty = isNaN(val) ? 0 : val;
             setTokenQuantity(isNaN(val) ? '' : val);
+            onQuantityChange?.(qty);
           }}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           disabled={isSubmitting}

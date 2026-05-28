@@ -376,3 +376,28 @@
   pointer-events: none;
   border-radius: inherit;
 }
+
+/* ── Leaflet map — Issue #247 ─────────────────────────────────────────────── */
+/* Prevent Leaflet controls from inheriting global styles and breaking layout */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 0;
+}
+.leaflet-control-zoom a,
+.leaflet-control-attribution a {
+  @apply no-underline;
+}
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-map-pane svg,
+.leaflet-map-pane canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
