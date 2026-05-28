@@ -76,7 +76,28 @@ resource "aws_db_instance" "postgres" {
   }
 }
 
+resource "aws_db_instance" "postgres_replica" {
+  identifier             = "agrifi-postgres-replica"
+  replicate_source_db    = aws_db_instance.postgres.identifier
+  instance_class         = var.db_instance_class
+  skip_final_snapshot    = true
+  publicly_accessible    = false
+  vpc_security_group_ids = [aws_security_group.postgres.id]
+
+  # Subnet group is inherited from the primary instance, do not specify db_subnet_group_name for replica.
+
+  tags = {
+    Name    = "agrifi-postgres-replica"
+    Project = "agri-fi"
+  }
+}
+
 output "rds_postgres_endpoint" {
-  description = "Connection endpoint for the PostgreSQL instance."
+  description = "Connection endpoint for the PostgreSQL primary instance."
   value       = aws_db_instance.postgres.endpoint
+}
+
+output "rds_postgres_replica_endpoint" {
+  description = "Connection endpoint for the PostgreSQL read replica."
+  value       = aws_db_instance.postgres_replica.endpoint
 }
