@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agri-fi-frontend
+  labels:
+    app: agri-fi-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agri-fi-frontend
+  template:
+    metadata:
+      labels:
+        app: agri-fi-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: agri-fi/frontend:latest
+          ports:
+            - containerPort: 3001
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "400m"
+              memory: "512Mi"
