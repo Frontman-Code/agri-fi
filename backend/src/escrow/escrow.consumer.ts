@@ -1,6 +1,11 @@
 import { Controller, Logger } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { EscrowService } from './escrow.service';
+import {
+  DEFAULT_QUEUE_MAX_RETRIES,
+  getExponentialBackoffDelayMs,
+  isTransientQueueError,
+} from '../queue/retry-policy';
 
 interface DealDeliveredPayload {
   tradeDealId: string;
@@ -9,7 +14,7 @@ interface DealDeliveredPayload {
 @Controller()
 export class EscrowConsumer {
   private readonly logger = new Logger(EscrowConsumer.name);
-  private readonly maxRetries = 3;
+  private readonly maxRetries = DEFAULT_QUEUE_MAX_RETRIES;
 
   constructor(private readonly escrowService: EscrowService) {}
 
@@ -40,14 +45,13 @@ export class EscrowConsumer {
       } catch (error) {
         lastError = error as Error;
 
-        if (this.isTransientError(error)) {
+        if (isTransientQueueError(error)) {
           this.logger.warn(
             `Transient error processing deal ${tradeDealId} (attempt ${attempt}/${this.maxRetries}): ${error.message}`,
           );
 
           if (attempt < this.maxRetries) {
-            // Exponential backoff: 1s, 2s, 4s
-            const delay = Math.pow(2, attempt - 1) * 1000;
+            const delay = getExponentialBackoffDelayMs(attempt, 1000);
             await this.sleep(delay);
             continue;
           }
@@ -71,43 +75,6 @@ export class EscrowConsumer {
     // The error handling (admin alerts, etc.) is already done in EscrowService
     // We don't re-throw here to prevent the message from being requeued indefinitely
     channel.nack(originalMsg, false, false);
-  }
-
-  private isTransientError(error: any): boolean {
-    // Consider Stellar network errors as transient
-    if (
-      error.message?.includes('stellar') ||
-      error.message?.includes('horizon')
-    ) {
-      return true;
-    }
-
-    // Consider timeout errors as transient
-    if (
-      error.message?.includes('timeout') ||
-      error.message?.includes('ETIMEDOUT')
-    ) {
-      return true;
-    }
-
-    // Consider connection errors as transient
-    if (
-      error.message?.includes('ECONNREFUSED') ||
-      error.message?.includes('ENOTFOUND')
-    ) {
-      return true;
-    }
-
-    // Database connection issues
-    if (
-      error.message?.includes('connection') &&
-      error.message?.includes('database')
-    ) {
-      return true;
-    }
-
-    // Default to non-transient for safety
-    return false;
   }
 
   private sleep(ms: number): Promise<void> {

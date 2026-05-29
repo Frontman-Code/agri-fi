@@ -18,8 +18,10 @@ import {
   DealCleanupPayload,
   BasePayload,
 } from './queue.service';
-
-const MAX_RETRIES = 3;
+import {
+  DEFAULT_QUEUE_MAX_RETRIES,
+  getExponentialBackoffDelayMs,
+} from './retry-policy';
 
 @Controller()
 export class QueueProcessor {
@@ -130,7 +132,7 @@ export class QueueProcessor {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
-    while (attempt < MAX_RETRIES) {
+    while (attempt < DEFAULT_QUEUE_MAX_RETRIES) {
       try {
         // Submit the investor-signed XDR to Stellar
         const result = await this.stellarService.submitTransaction(
@@ -174,14 +176,16 @@ export class QueueProcessor {
           {
             investmentId: data.investmentId,
             attempt,
-            maxRetries: MAX_RETRIES,
+            maxRetries: DEFAULT_QUEUE_MAX_RETRIES,
             error: error.message,
           },
-          `investment.fund attempt ${attempt}/${MAX_RETRIES} failed for ${data.investmentId}: ${error.message}`,
+          `investment.fund attempt ${attempt}/${DEFAULT_QUEUE_MAX_RETRIES} failed for ${data.investmentId}: ${error.message}`,
         );
 
-        if (attempt < MAX_RETRIES) {
-          await new Promise((r) => setTimeout(r, 500 * attempt)); // exponential backoff
+        if (attempt < DEFAULT_QUEUE_MAX_RETRIES) {
+          await new Promise((r) =>
+            setTimeout(r, getExponentialBackoffDelayMs(attempt, 500)),
+          );
         }
       }
     }
@@ -190,10 +194,10 @@ export class QueueProcessor {
     this.logger.error(
       {
         investmentId: data.investmentId,
-        maxRetries: MAX_RETRIES,
+        maxRetries: DEFAULT_QUEUE_MAX_RETRIES,
         error: lastError?.message,
       },
-      `investment.fund permanently failed for ${data.investmentId} after ${MAX_RETRIES} attempts: ${lastError?.message}`,
+      `investment.fund permanently failed for ${data.investmentId} after ${DEFAULT_QUEUE_MAX_RETRIES} attempts: ${lastError?.message}`,
     );
     await this.investmentRepo.update(data.investmentId, {
       status: 'failed' as any,

@@ -148,11 +148,15 @@ export class EscrowService {
         // The current implementation returns a single transaction ID
         const stellarTxId = stellarTxIds[0];
 
-        // Create payment distribution records
+        // Create payment distribution records using cent-safe arithmetic.
         const paymentDistributions: PaymentDistribution[] = [];
+        const totalValue = Number(deal.totalValue);
+        const [farmerAmount, platformAmount] = this.splitTotalValue(totalValue);
+        const investorAmounts = this.allocateProportionalAmounts(
+          totalValue,
+          investments.map((investment) => investment.tokenAmount),
+        );
 
-        // Farmer payment (98%)
-        const farmerAmount = deal.totalValue * 0.98;
         paymentDistributions.push(
           manager.create(PaymentDistribution, {
             tradeDealId,
@@ -166,9 +170,8 @@ export class EscrowService {
         );
 
         // Investor payments (proportional)
-        for (const investment of investments) {
-          const investorAmount =
-            (investment.tokenAmount / totalTokens) * deal.totalValue;
+        for (const [index, investment] of investments.entries()) {
+          const investorAmount = investorAmounts[index];
           paymentDistributions.push(
             manager.create(PaymentDistribution, {
               tradeDealId,
@@ -182,8 +185,6 @@ export class EscrowService {
           );
         }
 
-        // Platform fee (2%)
-        const platformAmount = deal.totalValue * 0.02;
         paymentDistributions.push(
           manager.create(PaymentDistribution, {
             tradeDealId,
@@ -262,6 +263,14 @@ export class EscrowService {
   ): Promise<void> {
     try {
       // Notify farmer
+      const totalValue = Number(deal.totalValue);
+      const [farmerAmount] = this.splitTotalValue(totalValue);
+      const investorPool = farmerAmount;
+      const investorReturnAmounts = this.allocateProportionalAmounts(
+        investorPool,
+        investments.map((investment) => investment.tokenAmount),
+      );
+
       await this.queueService.emit('email.notification', {
         type: 'deal_completed',
         recipient: 'farmer',
@@ -269,8 +278,8 @@ export class EscrowService {
         dealId: tradeDealId,
         dealDetails: {
           commodity: deal.commodity,
-          totalValue: deal.totalValue,
-          farmerAmount: deal.totalValue * 0.98,
+          totalValue,
+          farmerAmount,
         },
       });
 
@@ -282,20 +291,13 @@ export class EscrowService {
         dealId: tradeDealId,
         dealDetails: {
           commodity: deal.commodity,
-          totalValue: deal.totalValue,
+          totalValue,
         },
       });
 
       // Notify all investors
-      const totalTokens = investments.reduce(
-        (sum, inv) => sum + inv.tokenAmount,
-        0,
-      );
-      const investorPool = deal.totalValue * 0.98;
-
-      for (const investment of investments) {
-        const returnAmount =
-          (investment.tokenAmount / totalTokens) * investorPool;
+      for (const [index, investment] of investments.entries()) {
+        const returnAmount = investorReturnAmounts[index];
 
         await this.queueService.emit('email.notification', {
           type: 'deal_completed',
@@ -304,7 +306,7 @@ export class EscrowService {
           dealId: tradeDealId,
           dealDetails: {
             commodity: deal.commodity,
-            totalValue: deal.totalValue,
+            totalValue,
             investmentAmount: investment.amountUsd,
             returnAmount: returnAmount,
             tokenAmount: investment.tokenAmount,
@@ -319,5 +321,47 @@ export class EscrowService {
         error,
       );
     }
+  }
+
+  private splitTotalValue(totalValue: number): [number, number] {
+    const totalCents = this.toCents(totalValue);
+    const platformCents = Math.round(totalCents * 0.02);
+    const farmerCents = totalCents - platformCents;
+    return [this.fromCents(farmerCents), this.fromCents(platformCents)];
+  }
+
+  private allocateProportionalAmounts(
+    totalValue: number,
+    weights: number[],
+  ): number[] {
+    if (weights.length === 0) {
+      return [];
+    }
+
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    if (totalWeight <= 0) {
+      throw new Error('Cannot allocate amounts without positive weights.');
+    }
+
+    const totalCents = this.toCents(totalValue);
+    let allocatedCents = 0;
+
+    return weights.map((weight, index) => {
+      if (index === weights.length - 1) {
+        return this.fromCents(totalCents - allocatedCents);
+      }
+
+      const shareCents = Math.floor((totalCents * weight) / totalWeight);
+      allocatedCents += shareCents;
+      return this.fromCents(shareCents);
+    });
+  }
+
+  private toCents(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100);
+  }
+
+  private fromCents(cents: number): number {
+    return cents / 100;
   }
 }
