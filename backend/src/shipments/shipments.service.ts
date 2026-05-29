@@ -16,6 +16,7 @@ import { StellarService } from '../stellar/stellar.service';
 import { QueueService } from '../queue/queue.service';
 import { ConfigService } from '@nestjs/config';
 import { TradeDeal } from '../trade-deals/entities/trade-deal.entity';
+import { buildShipmentMemo } from '../stellar/anchor-memo';
 
 const MILESTONE_SEQUENCE: MilestoneType[] = [
   'farm',
@@ -94,9 +95,7 @@ export class ShipmentsService {
       }
 
       // 5.2 — anchor on Stellar
-      const dealIdShort = deal.id.replace(/-/g, '').slice(0, 8);
-      const unixTs = Math.floor(Date.now() / 1000);
-      const memoText = `AGRIC:MILESTONE:${dealIdShort}:${dto.milestone}:${unixTs}`;
+      const memoText = buildShipmentMemo(deal.id, dto.milestone);
 
       let signerSecret = this.config.get<string>('STELLAR_PLATFORM_SECRET', '');
       if (deal.escrowSecretKey) {
