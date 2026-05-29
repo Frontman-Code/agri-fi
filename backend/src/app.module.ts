@@ -22,6 +22,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SorobanModule } from './soroban/soroban.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { validateEnvironment } from './config/env.validation';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MetricsModule } from './metrics/metrics.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      validate: validateEnvironment,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
