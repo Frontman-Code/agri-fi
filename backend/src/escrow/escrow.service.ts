@@ -12,7 +12,7 @@ import {
 import { User } from '../auth/entities/user.entity';
 import { StellarService, InvestorShare } from '../stellar/stellar.service';
 import { QueueService } from '../queue/queue.service';
-import { Keypair } from 'stellar-sdk';
+import { Keypair } from '@stellar/stellar-sdk';
 
 interface DealDeliveredPayload {
   tradeDealId: string;

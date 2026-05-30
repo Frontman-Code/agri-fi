@@ -4,7 +4,7 @@ import { StellarService } from './stellar.service';
 import { PinoLogger } from 'nestjs-pino';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TransactionLog } from './entities/transaction-log.entity';
-import { Keypair } from 'stellar-sdk';
+import { Keypair } from '@stellar/stellar-sdk';
 
 /**
  * Unit tests for StellarService — pure logic that doesn't require network calls.

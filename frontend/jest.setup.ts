@@ -20,14 +20,33 @@ jest.mock('next/navigation', () => ({
   },
 }));
 
-// Mock localStorage
+// Mock next-intl so components using useTranslations/useLocale work without a provider
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
+  useFormatter: () => ({
+    number: (v: number) => String(v),
+    dateTime: (v: Date) => v.toISOString(),
+  }),
+}));
+
+// Mock localStorage with jest.fn() so tests can call .mockReturnValue etc.
 const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.localStorage = localStorageMock as any;
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});
+
+// Make window.location.reload mockable (jsdom marks it read-only)
+Object.defineProperty(window, 'location', {
+  value: { ...window.location, reload: jest.fn() },
+  writable: true,
+});
 
 // Mock fetch
 global.fetch = jest.fn();

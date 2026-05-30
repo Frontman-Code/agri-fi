@@ -39,9 +39,10 @@ describe('AuthController', () => {
   describe('POST /auth/register', () => {
     it('should have throttler guard applied', async () => {
       const registerDto = {
+        name: 'Test User',
         email: 'test@example.com',
         password: 'password123',
-        role: 'farmer',
+        role: 'farmer' as const,
         country: 'NG',
       };
 

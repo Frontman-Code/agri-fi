@@ -418,9 +418,7 @@ export class QueueProcessor {
     );
     if (!usdcContractId) return;
 
-    const deadlineTs = Math.floor(
-      new Date(deal.deliveryDate).getTime() / 1000,
-    );
+    const deadlineTs = Math.floor(new Date(deal.deliveryDate).getTime() / 1000);
     const fundingTargetStroops = BigInt(
       Math.round(Number(deal.totalValue) * 1e7),
     );

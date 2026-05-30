@@ -100,8 +100,8 @@ jobs:
         working-directory: backend
 
       - name: SonarQube scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        if: ${{ always() }}
+        uses: SonarSource/sonarqube-scan-action@v6
+        if: ${{ always() && secrets.SONAR_HOST_URL != '' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

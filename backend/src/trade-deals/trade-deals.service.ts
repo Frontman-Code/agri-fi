@@ -388,7 +388,6 @@ export class TradeDealsService {
     }
 
     if (deal.status === 'canceled') {
-      throw new Error('Deal is already canceled');
       return deal;
     }
 

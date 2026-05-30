@@ -43,7 +43,8 @@ export class InvestmentsController {
   @ApiOperation({ summary: 'Create an investment (investor only)' })
   @ApiResponse({
     status: 201,
-    description: 'Investment created, returns pending investment and unsigned Stellar XDR',
+    description:
+      'Investment created, returns pending investment and unsigned Stellar XDR',
     schema: {
       type: 'object',
       properties: {
@@ -61,7 +62,8 @@ export class InvestmentsController {
         },
         unsignedXdr: {
           type: 'string',
-          description: 'Base64-encoded unsigned Stellar XDR transaction envelope',
+          description:
+            'Base64-encoded unsigned Stellar XDR transaction envelope',
         },
       },
     },
@@ -74,7 +76,11 @@ export class InvestmentsController {
   })
   @ApiResponse({ status: 404, description: 'Trade deal not found' })
   @ApiResponse({ status: 409, description: 'Deal already fully funded' })
-  @ApiResponse({ status: 422, description: 'No wallet address linked / deal not open / insufficient tokens' })
+  @ApiResponse({
+    status: 422,
+    description:
+      'No wallet address linked / deal not open / insufficient tokens',
+  })
   @ApiResponse({ status: 429, description: 'Too Many Requests' })
   @UseGuards(KycGuard, RolesGuard)
   @Roles('investor')

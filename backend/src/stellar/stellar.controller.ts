@@ -21,7 +21,11 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { StellarService } from './stellar.service';
 import { User } from '../auth/entities/user.entity';
-import { TransactionBuilder, Networks, FeeBumpTransaction } from 'stellar-sdk';
+import {
+  TransactionBuilder,
+  Networks,
+  FeeBumpTransaction,
+} from '@stellar/stellar-sdk';
 
 @ApiTags('stellar')
 @ApiBearerAuth('jwt')

@@ -66,8 +66,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // ClsMiddleware MUST run first to establish the async context,
     // then CorrelationIdMiddleware can safely call cls.set()
-    consumer
-      .apply(ClsMiddleware, CorrelationIdMiddleware)
-      .forRoutes('*');
+    consumer.apply(ClsMiddleware, CorrelationIdMiddleware).forRoutes('*');
   }
 }

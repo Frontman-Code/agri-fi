@@ -33,9 +33,9 @@ describe('Trade Deal Concurrency - Database Transaction Locks (E2E)', () => {
   /**
    * In-memory store for testing
    */
-  let deals: Map<string, MockTradeDeal> = new Map();
-  let investments: Map<string, MockInvestment[]> = new Map();
-  let locks: Map<string, boolean> = new Map();
+  const deals: Map<string, MockTradeDeal> = new Map();
+  const investments: Map<string, MockInvestment[]> = new Map();
+  const locks: Map<string, boolean> = new Map();
 
   beforeEach(() => {
     deals.clear();
@@ -46,10 +46,7 @@ describe('Trade Deal Concurrency - Database Transaction Locks (E2E)', () => {
   /**
    * Helper: Create a test trade deal
    */
-  function createTestDeal(
-    id: string,
-    tokenCount: number = 100,
-  ): MockTradeDeal {
+  function createTestDeal(id: string, tokenCount: number = 100): MockTradeDeal {
     const deal: MockTradeDeal = {
       id,
       tokenCount,
@@ -368,7 +365,7 @@ describe('Trade Deal Concurrency - Database Transaction Locks (E2E)', () => {
         investWithLock(dealId, `investor-${i}`, 30),
       );
 
-      const results = await Promise.all(investmentPromises);
+      await Promise.all(investmentPromises);
 
       // Get all investments
       const dealInvestments = investments.get(dealId) || [];
@@ -507,19 +504,18 @@ describe('Trade Deal Concurrency - Database Transaction Locks (E2E)', () => {
       expect(batch1Failed.length).toBeGreaterThan(0);
 
       // Second batch: Sequential investments to fill remaining capacity
-      let remainingCapacity = 100;
       const dealInvestments = investments.get(dealId) || [];
       const currentTotal = dealInvestments.reduce(
         (sum, inv) => sum + inv.tokenAmount,
         0,
       );
-      remainingCapacity -= currentTotal;
+      void currentTotal; // capacity reference for documentation
 
       const batch2Promises = Array.from({ length: 5 }, (_, i) =>
         investWithLock(dealId, `investor-batch2-${i}`, 10),
       );
 
-      const batch2Results = await Promise.all(batch2Promises);
+      await Promise.all(batch2Promises);
 
       // Verify final total doesn't exceed limit
       const finalInvestments = investments.get(dealId) || [];

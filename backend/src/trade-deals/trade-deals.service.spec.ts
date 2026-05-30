@@ -53,6 +53,8 @@ const mockDeal = (): TradeDeal => ({
   totalInvested: 0,
   deliveryDate: new Date('2026-12-01'),
   stellarAssetTxId: null,
+  sorobanCampaignContractId: null,
+  sorobanFactoryTxHash: null,
   documents: [],
   investments: [],
   createdAt: new Date(),

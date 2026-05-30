@@ -52,7 +52,8 @@ export class InvestmentsService {
     if (!investor.walletAddress) {
       throw new UnprocessableEntityException({
         code: 'NO_WALLET_ADDRESS',
-        message: 'Investor must link a Stellar wallet address before investing.',
+        message:
+          'Investor must link a Stellar wallet address before investing.',
       });
     }
 

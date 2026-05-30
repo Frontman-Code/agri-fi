@@ -13,7 +13,8 @@ import {
   Asset,
   BASE_FEE,
   Memo,
-} from 'stellar-sdk';
+} from '@stellar/stellar-sdk';
+import { createAsset } from './utils/asset-helper';
 import {
   createDecipheriv,
   createCipheriv,
@@ -81,7 +82,7 @@ export class StellarService {
     const usdcAssetCode = config.get<string>('USDC_ASSET_CODE', 'USDC');
     const usdcIssuer = config.get<string>('USDC_ISSUER', '');
     this.usdcAsset = usdcIssuer
-      ? new Asset(usdcAssetCode, usdcIssuer)
+      ? createAsset(usdcAssetCode, usdcIssuer)
       : Asset.native(); // fallback to XLM only if issuer not configured
 
     this.logger.info(
@@ -226,7 +227,7 @@ export class StellarService {
     fundIssuerTx.sign(this.platformKeypair, issuerKeypair);
     await this.server.submitTransaction(fundIssuerTx);
 
-    const tradeAsset = new Asset(assetCode, issuerKeypair.publicKey());
+    const tradeAsset = createAsset(assetCode, issuerKeypair.publicKey());
 
     // Escrow account establishes trustline for the asset
     const escrowAccount = await this.server.loadAccount(escrowPublicKey);
@@ -360,7 +361,7 @@ export class StellarService {
     const escrowKeypair = Keypair.fromSecret(escrowSecret);
     const escrowAccount = await this.server.loadAccount(escrowPublicKey);
 
-    const tradeToken = new Asset(assetCode, escrowPublicKey);
+    const tradeToken = createAsset(assetCode, escrowPublicKey);
 
     const tx = new TransactionBuilder(escrowAccount, {
       fee: BASE_FEE,
@@ -609,14 +610,12 @@ export class StellarService {
       networkPassphrase: this.networkPassphrase,
     });
 
-    let operationsAdded = 0;
-
     for (const balance of account.balances) {
       if (balance.asset_type !== 'native') {
         const asset =
           balance.asset_type === 'credit_alphanum4' ||
           balance.asset_type === 'credit_alphanum12'
-            ? new Asset(balance.asset_code, balance.asset_issuer)
+            ? createAsset(balance.asset_code, balance.asset_issuer)
             : undefined;
 
         if (asset) {
@@ -636,7 +635,6 @@ export class StellarService {
                 amount: balance.balance,
               }),
             );
-            operationsAdded++;
           }
 
           // Remove trustline
@@ -646,7 +644,6 @@ export class StellarService {
               limit: '0',
             }),
           );
-          operationsAdded++;
         }
       }
     }
@@ -656,7 +653,6 @@ export class StellarService {
         destination,
       }),
     );
-    operationsAdded++;
 
     const tx = txBuilder.setTimeout(30).build();
     tx.sign(keypair);
@@ -752,7 +748,7 @@ export class StellarService {
     complianceData?: Record<string, unknown>,
   ): Promise<string> {
     const investorAccount = await this.server.loadAccount(investorWallet);
-    const tradeAsset = new Asset(assetCode, issuerPublicKey);
+    const tradeAsset = createAsset(assetCode, issuerPublicKey);
 
     const needsTrustline = !(await this.hasTrustline(
       investorAccount,
@@ -839,7 +835,10 @@ export class StellarService {
       if (inv.issuerPublicKey) {
         const key = `${inv.assetCode}:${inv.issuerPublicKey}`;
         if (!uniqueAssets.has(key)) {
-          uniqueAssets.set(key, new Asset(inv.assetCode, inv.issuerPublicKey));
+          uniqueAssets.set(
+            key,
+            createAsset(inv.assetCode, inv.issuerPublicKey),
+          );
         }
       }
     }
@@ -972,7 +971,7 @@ export class StellarService {
     offerId = 0, // 0 = new offer; non-zero = update/cancel existing offer
   ): Promise<string> {
     const sellerAccount = await this.server.loadAccount(sellerWallet);
-    const tradeAsset = new Asset(tradeTokenCode, tradeTokenIssuer);
+    const tradeAsset = createAsset(tradeTokenCode, tradeTokenIssuer);
 
     const tx = new TransactionBuilder(sellerAccount, {
       fee: BASE_FEE,
@@ -1021,7 +1020,7 @@ export class StellarService {
       price: string;
     }>
   > {
-    const tradeAsset = new Asset(tradeTokenCode, tradeTokenIssuer);
+    const tradeAsset = createAsset(tradeTokenCode, tradeTokenIssuer);
 
     const offersPage = await this.server
       .offers()
@@ -1052,7 +1051,7 @@ export class StellarService {
       price: string;
     }>
   > {
-    const tradeAsset = new Asset(tradeTokenCode, tradeTokenIssuer);
+    const tradeAsset = createAsset(tradeTokenCode, tradeTokenIssuer);
 
     const offersPage = await this.server
       .offers()
@@ -1124,7 +1123,7 @@ export class StellarService {
   ): Promise<void> {
     const issuerKeypair = Keypair.fromSecret(issuerSecret);
     const issuerAccount = await this.server.loadAccount(issuerPublicKey);
-    const tradeAsset = new Asset(assetCode, issuerPublicKey);
+    const tradeAsset = createAsset(assetCode, issuerPublicKey);
 
     const txBuilder = new TransactionBuilder(issuerAccount, {
       fee: BASE_FEE,
