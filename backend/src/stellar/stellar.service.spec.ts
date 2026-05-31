@@ -217,4 +217,64 @@ describe('StellarService', () => {
       expect((service as any).server.submitTransaction).toHaveBeenCalled();
     });
   });
+
+  describe('freezeAsset', () => {
+    const issuerKeypair = Keypair.random();
+    const trustorWallet = Keypair.random().publicKey();
+    const mockAccount = {
+      sequenceNumber: () => '1',
+      incrementSequenceNumber: jest.fn(),
+      accountId: () => issuerKeypair.publicKey(),
+    };
+
+    beforeEach(() => {
+      (service as any).server = {
+        loadAccount: jest.fn().mockResolvedValue(mockAccount),
+        submitTransaction: jest.fn().mockResolvedValue({ hash: 'freeze-tx-hash' }),
+      };
+    });
+
+    it('freezes a trustline by setting authorized:false', async () => {
+      const txId = await service.freezeAsset(
+        issuerKeypair.secret(),
+        'COCOA1',
+        issuerKeypair.publicKey(),
+        trustorWallet,
+        true,
+      );
+
+      expect(txId).toBe('freeze-tx-hash');
+      expect((service as any).server.loadAccount).toHaveBeenCalledWith(issuerKeypair.publicKey());
+      expect((service as any).server.submitTransaction).toHaveBeenCalled();
+    });
+
+    it('unfreezes a trustline by setting authorized:true', async () => {
+      const txId = await service.freezeAsset(
+        issuerKeypair.secret(),
+        'COCOA1',
+        issuerKeypair.publicKey(),
+        trustorWallet,
+        false,
+      );
+
+      expect(txId).toBe('freeze-tx-hash');
+      expect((service as any).server.submitTransaction).toHaveBeenCalled();
+    });
+
+    it('throws when Stellar submission fails', async () => {
+      (service as any).server.submitTransaction = jest
+        .fn()
+        .mockRejectedValue(new Error('tx_failed'));
+
+      await expect(
+        service.freezeAsset(
+          issuerKeypair.secret(),
+          'COCOA1',
+          issuerKeypair.publicKey(),
+          trustorWallet,
+          true,
+        ),
+      ).rejects.toThrow('tx_failed');
+    });
+  });
 });

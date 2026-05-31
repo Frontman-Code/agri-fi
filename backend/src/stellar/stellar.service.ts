@@ -1145,6 +1145,56 @@ export class StellarService {
   }
 
   /**
+   * Freezes (or unfreezes) a specific investor's trustline for a trade asset.
+   * Requires the issuer account to have AUTH_REVOCABLE set (flag 2), which is
+   * applied during issueTradeToken via setFlags: 10 (AuthRevocable | AuthClawback).
+   *
+   * Uses setTrustLineFlags (allowTrust is deprecated in SDK v13).
+   *
+   * @param issuerSecret  Decrypted issuer secret key for the asset
+   * @param assetCode     Asset code (e.g. "COCOA1002")
+   * @param issuerPublicKey  Issuer public key
+   * @param trustorWallet Investor wallet address whose trustline to freeze
+   * @param freeze        true = freeze (revoke authorization), false = unfreeze
+   * @returns Stellar transaction ID
+   */
+  async freezeAsset(
+    issuerSecret: string,
+    assetCode: string,
+    issuerPublicKey: string,
+    trustorWallet: string,
+    freeze: boolean,
+  ): Promise<string> {
+    const issuerKeypair = Keypair.fromSecret(issuerSecret);
+    const issuerAccount = await this.server.loadAccount(issuerPublicKey);
+    const asset = createAsset(assetCode, issuerPublicKey);
+
+    const tx = new TransactionBuilder(issuerAccount, {
+      fee: BASE_FEE,
+      networkPassphrase: this.networkPassphrase,
+    })
+      .addOperation(
+        Operation.setTrustLineFlags({
+          trustor: trustorWallet,
+          asset,
+          flags: { authorized: !freeze },
+        }),
+      )
+      .setTimeout(30)
+      .build();
+
+    tx.sign(issuerKeypair);
+    const result = await this.submitWithRetry(tx);
+    const txId = (result as any).hash as string;
+
+    this.logger.info(
+      { assetCode, issuerPublicKey, trustorWallet, freeze, txId },
+      `Asset trustline ${freeze ? 'frozen' : 'unfrozen'} for ${trustorWallet}`,
+    );
+    return txId;
+  }
+
+  /**
    * Clawbacks tokens from all current holders back to the issuer.
    */
   async clawbackTokens(
